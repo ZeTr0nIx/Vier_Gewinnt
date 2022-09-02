@@ -1,12 +1,14 @@
+from calendar import c
 from turtle import position
 import pygame,sys
 
 class Button: 
 
-    def __init__(self, text,  pos, font, background=[255,255,255], feedback="",centered=True):
+    def __init__(self, text,  pos, font, background=[255,255,255], feedback="",centered=True, action="exit"):
         self.x, self.y = pos
         self.background = background
         self.text = text
+        self.action = action
         self.font = pygame.font.SysFont("Arial", 30)
         if feedback == "":
             self.feedback = "text"
@@ -28,13 +30,13 @@ class Button:
     def show(self):
         screen.blit(self.surface, (self.x, self.y))
  
-    def click(self, event):
+    def click(self, event, victory):
         x, y = pygame.mouse.get_pos()
         if event.type == pygame.MOUSEBUTTONDOWN:
             if pygame.mouse.get_pressed()[0]:
                 if self.rect.collidepoint(x, y):
-                    sys.exit()
-
+                    if self.action == "exit" and victory:
+                        sys.exit()
 
 def draw_grid(grid):
     for column in range(COLUMN_COUNT):
@@ -183,19 +185,19 @@ def check_for_victory(grid):
     
     winner = 0
     for column in range(COLUMN_COUNT):
-        winner =check_column(column)
-        if winner != 0:
-            return winner
-        winner =check_diagonal_right(0,column)
-        if winner != 0:
-            return winner
-    for row in range(ROW_COUNT):
-        winner =check_row(row)
-        if winner != 0:
-            return winner
-        winner =check_diagonal_left(row,0)
-        if winner != 0:
-            return winner
+        for row in range(ROW_COUNT):
+            winner =check_column(column)
+            if winner != 0:
+                return winner
+            winner =check_diagonal_right(row,column)
+            if winner != 0:
+                return winner
+            winner =check_row(row)
+            if winner != 0:
+                return winner
+            winner =check_diagonal_left(row,column)
+            if winner != 0:
+                return winner
             
 
 def get_final_stacking_position(grid, column):
@@ -258,7 +260,8 @@ while True:
                     victory = True
                 current_position = row, column
                 
-            exit_button.click(event)
+            exit_button.click(event,victory)
+            
                                     
     screen.fill(BLUE)
     draw_grid(grid)
